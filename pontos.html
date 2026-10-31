@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⭐ Pontos de Bom Garoto</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: #fff;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+
+    h1 span { color: #ffd700; }
+
+    .subtitle {
+      color: #aaa;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      background: #444;
+      color: #fff;
+    }
+
+    .status.online { background: #27ae60; }
+    .status.offline { background: #e74c3c; }
+    .status.conectando { background: #f39c12; }
+
+    .contador-card {
+      background: #fff;
+      color: #1a1a2e;
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+      text-align: center;
+      min-width: 320px;
+    }
+
+    .contador-label {
+      font-size: 1rem;
+      color: #777;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .contador-valor {
+      font-size: 5rem;
+      font-weight: bold;
+      color: #1a1a2e;
+      margin-bottom: 1.5rem;
+      transition: color 0.3s, transform 0.2s;
+      line-height: 1;
+    }
+
+    .contador-valor.positivo { color: #27ae60; }
+    .contador-valor.negativo { color: #e74c3c; }
+    .contador-valor.zero { color: #1a1a2e; }
+    .contador-valor.pulse { transform: scale(1.15); }
+
+    .botoes {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-controle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: none;
+      font-size: 2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .btn-mais {
+      background: #27ae60;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+    }
+    .btn-mais:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
+    }
+
+    .btn-menos {
+      background: #e74c3c;
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+    }
+    .btn-menos:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+    }
+
+    .btn-controle:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 2px solid #ddd;
+      color: #777;
+      padding: 0.6rem 1.5rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover { background: #f5f5f5; color: #1a1a2e; }
+
+    .limite-aviso {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 1rem;
+    }
+
+    .btn-voltar {
+      margin-top: 2rem;
+      background: #e94560;
+      color: #fff;
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .btn-voltar:hover { transform: translateY(-3px); }
+
+    @media (max-width: 500px) {
+      .contador-card { padding: 2rem 1.5rem; min-width: auto; width: 100%; }
+      .contador-valor { font-size: 4rem; }
+      .btn-controle { width: 70px; height: 70px; font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⭐ Pontos de <span>Bom Garoto</span></h1>
+  <p class="subtitle">Sincronizado em todos os dispositivos (limite: -1000 a +1000)</p>
+
+  <div class="status conectando" id="status">⏳ Conectando...</div>
+
+  <div class="contador-card">
+    <div class="contador-label">Meus Pontos</div>
+    <div class="contador-valor zero" id="valor">0</div>
+
+    <div class="botoes">
+      <button class="btn-controle btn-menos" id="btnMenos" aria-label="Diminuir">−</button>
+      <button class="btn-controle btn-mais" id="btnMais" aria-label="Aumentar">+</button>
+    </div>
+
+    <button class="btn-reset" id="btnReset">🔄 Resetar PLSS</button>
+
+    <p class="limite-aviso">Limite: −1000 a +1000 · ☁️ Sincronizado</p>
+  </div>
+
+  <a href="index.html" class="btn-voltar">← Voltar para a Loja</a>
+
+  <!-- ===== FIREBASE SDK ===== -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, runTransaction }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ===== CONFIGURAÇÃO DO FIREBASE =====
+  const firebaseConfig = {
+    apiKey: "AIzaSyAoy-1twtGTVlAyFcaok5-fonGBR1FBlGE",
+    authDomain: "pontos-de-bom-garoto.firebaseapp.com",
+    databaseURL: "https://pontos-de-bom-garoto-default-rtdb.firebaseio.com",
+    projectId: "pontos-de-bom-garoto",
+    storageBucket: "pontos-de-bom-garoto.firebasestorage.app",
+    messagingSenderId: "124771359835",
+    appId: "1:124771359835:web:c4442495800b032b4ef37e"
+  };
+
+  // ===== CONFIGURAÇÃO =====
+  const MIN = -1000;
+  const MAX = 1000;
+  const PASSO = 1;
+
+  // ===== INICIALIZA FIREBASE =====
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const pontosRef = ref(db, 'pontosBomGaroto');
+
+  // ===== ELEMENTOS =====
+  const valorEl = document.getElementById('valor');
+  const btnMais = document.getElementById('btnMais');
+  const btnMenos = document.getElementById('btnMenos');
+  const btnReset = document.getElementById('btnReset');
+  const statusEl = document.getElementById('status');
+
+  // ===== ESTADO =====
+  let pontosAtual = 0;
+  let conectado = false;
+  let pontosRecebidos = false;
+
+  console.log('🚀 Script iniciado');
+
+  // ===== ATUALIZA UI =====
+  function atualizarUI(pontos) {
+    console.log('🎨 atualizarUI chamado com:', pontos, '| conectado:', conectado);
+
+    // Garante que é número
+    pontos = Number(pontos) || 0;
+    pontosAtual = pontos;
+
+    // Texto
+    valorEl.textContent = pontos > 0 ? `+${pontos}` : pontos;
+
+    // Cor
+    valorEl.classList.remove('positivo', 'negativo', 'zero');
+    if (pontos > 0) valorEl.classList.add('positivo');
+    else if (pontos < 0) valorEl.classList.add('negativo');
+    else valorEl.classList.add('zero');
+
+    // Animação
+    valorEl.classList.add('pulse');
+    setTimeout(() => valorEl.classList.remove('pulse'), 150);
+
+    // Botões: só desabilita se NÃO conectou AINDA ou se chegou no limite
+    btnMais.disabled = !conectado || pontos >= MAX;
+    btnMenos.disabled = !conectado || pontos <= MIN;
+
+    console.log('🔘 btnMais.disabled =', btnMais.disabled, '| btnMenos.disabled =', btnMenos.disabled);
+  }
+
+  // ===== ESCUTA MUDANÇAS DE PONTOS =====
+  onValue(pontosRef, (snapshot) => {
+    const valor = snapshot.val();
+    console.log('📥 Valor recebido do Firebase:', valor);
+    pontosRecebidos = true;
+    atualizarUI(valor === null ? 0 : valor);
+  }, (error) => {
+    console.error('❌ Erro ao ler pontos:', error);
+  });
+
+  // ===== STATUS DE CONEXÃO =====
+  const connectedRef = ref(db, '.info/connected');
+  onValue(connectedRef, (snap) => {
+    conectado = snap.val() === true;
+    console.log('🔌 Conexão:', conectado);
+
+    if (conectado) {
+      statusEl.textContent = '🟢 Online · Sincronizado';
+      statusEl.className = 'status online';
+    } else {
+      statusEl.textContent = '🔴 Offline · Reconectando...';
+      statusEl.className = 'status offline';
+    }
+
+    // Atualiza botões com o estado atual
+    atualizarUI(pontosAtual);
+  });
+
+  // ===== AUMENTAR =====
+  async function aumentar() {
+    console.log('➕ Clicou em AUMENTAR | conectado:', conectado, '| pontosAtual:', pontosAtual);
+
+    if (!conectado) {
+      console.warn('⚠️ Não conectado, ignorando clique');
+      return;
+    }
+
+    try {
+      const resultado = await runTransaction(pontosRef, (atual) => {
+        const valor = atual === null ? 0 : atual;
+        console.log('🔄 Transação: valor atual =', valor);
+        if (valor >= MAX) return valor;
+        return valor + PASSO;
+      });
+
+      console.log('✅ Transação concluída:', resultado);
+    } catch (e) {
+      console.error('❌ Erro ao aumentar:', e);
+    }
+  }
+
+  // ===== DIMINUIR =====
+  async function diminuir() {
+    console.log('➖ Clicou em DIMINUIR | conectado:', conectado, '| pontosAtual:', pontosAtual);
+
+    if (!conectado) {
+      console.warn('⚠️ Não conectado, ignorando clique');
+      return;
+    }
+
+    try {
+      const resultado = await runTransaction(pontosRef, (atual) => {
+        const valor = atual === null ? 0 : atual;
+        console.log('🔄 Transação: valor atual =', valor);
+        if (valor <= MIN) return valor;
+        return valor - PASSO;
+      });
+
+      console.log('✅ Transação concluída:', resultado);
+    } catch (e) {
+      console.error('❌ Erro ao diminuir:', e);
+    }
+  }
+
+  // ===== RESETAR =====
+  async function resetar() {
+    if (!conectado) return;
+    if (!confirm('Resetar os pontos para 0 em TODOS os dispositivos?')) return;
+    try {
+      await set(pontosRef, 0);
+      console.log('✅ Resetado para 0');
+    } catch (e) {
+      console.error('❌ Erro ao resetar:', e);
+    }
+  }
+
+  // ===== BOTÕES =====
+  btnMais.addEventListener('click', aumentar);
+  btnMenos.addEventListener('click', diminuir);
+  btnReset.addEventListener('click', resetar);
+
+  // ===== ATALHOS DE TECLADO =====
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === '+') aumentar();
+    if (e.key === 'ArrowDown' || e.key === '-') diminuir();
+  });
+</script>
